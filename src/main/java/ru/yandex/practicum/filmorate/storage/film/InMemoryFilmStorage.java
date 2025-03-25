@@ -11,21 +11,20 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private final Map<Integer, Film> films;
+    private final Map<Long, Film> films = new HashMap<>();
 
-    public InMemoryFilmStorage() {
-        this.films = new HashMap<>();
-    }
-
+    @Override
     public Collection<Film> getAllFilms() {
         return films.values();
     }
 
+    @Override
     public Film postFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             String message = "Название не может быть пустым";
@@ -39,6 +38,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
+    @Override
     public Film putFilm(Film newFilm) {
         if (newFilm.getId() <= 0) {
             String message = "Id должен быть указан";
@@ -67,6 +67,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
+    @Override
+    public Optional<Film> findFilmById(Long filmId) {
+        return Optional.ofNullable(films.get(filmId));
+    }
+
     private void validate(Film film) {
         if (film.getDescription() != null && film.getDescription().length() > 200) {
             String message = "Максимальная длина описания — 200 символов";
@@ -86,10 +91,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         log.debug("Валидация фильма прошла успешно: {}", film.getName());
     }
 
-    private int getNextId() {
-        int currentMaxId = films.keySet()
+    private long getNextId() {
+        long currentMaxId = films.keySet()
                 .stream()
-                .mapToInt(id -> id)
+                .mapToLong(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;

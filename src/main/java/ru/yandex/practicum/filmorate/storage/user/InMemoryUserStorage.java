@@ -11,21 +11,20 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    private final Map<Integer, User> users;
+    private final Map<Long, User> users = new HashMap<>();
 
-    public InMemoryUserStorage() {
-        this.users = new HashMap<>();
-    }
-
+    @Override
     public Collection<User> getAllUsers() {
         return users.values();
     }
 
+    @Override
     public User postUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             String message = "Электронная почта не может быть пустой и должна содержать символ @";
@@ -52,6 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
+    @Override
     public User putUser(User newUser) {
         if (newUser.getId() <= 0) {
             String message = "Id должен быть указан";
@@ -91,10 +91,15 @@ public class InMemoryUserStorage implements UserStorage {
         throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
     }
 
-    private int getNextId() {
-        int currentMaxId = users.keySet()
+    @Override
+    public Optional<User> findUserById(Long id) {
+        return Optional.ofNullable(users.get(id));
+    }
+
+    private long getNextId() {
+        long currentMaxId = users.keySet()
                 .stream()
-                .mapToInt(id -> id)
+                .mapToLong(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;
