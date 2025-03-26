@@ -104,7 +104,7 @@ public class UserService {
     }
 
     // GET /users/{id}/friends
-    public List<User> getFriends(Long userId){
+    public List<User> getFriends(Long userId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         return userStorage.findFriends(user);
