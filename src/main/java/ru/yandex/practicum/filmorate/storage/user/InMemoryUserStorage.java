@@ -76,7 +76,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     // GET /users/{id}/friends
     @Override
-    public List<User> findFriends(User user){
+    public List<User> findFriends(User user) {
         log.info("Получен список друзей - {} человек пользователя {}", user.getFriends().size(), user);
         return user.getFriends().stream()
                 .map(users::get)
