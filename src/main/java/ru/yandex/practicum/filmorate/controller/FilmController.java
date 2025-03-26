@@ -3,33 +3,61 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
     @Autowired
-    public FilmController(FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
     }
 
+    // GET "/films"
     @GetMapping
     public Collection<Film> findAll() {
-        return filmStorage.getAllFilms();
+        return filmService.getAllFilms();
     }
 
+    // POST "/films"
     @PostMapping
-    public Film create(@RequestBody Film film) {
-        return filmStorage.postFilm(film);
+    public Film addFilm(@RequestBody Film film) {
+        return filmService.createFilm(film);
     }
 
+    // PUT "/films"
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
-       return filmStorage.putFilm(newFilm);
+       return filmService.updateFilm(newFilm);
+    }
+
+    // GET "/films/{id}"
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Long id) {
+        return filmService.getFilmById(id);
+    }
+
+    // PUT /films/{id}/like/{userId}
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLike(id, userId);
+    }
+
+    // DELETE /films/{id}/like/{userId}
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.removeLike(id, userId);
+    }
+
+    //GET /films/popular?count={count}
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getMostPopularFilms(count);
     }
 }

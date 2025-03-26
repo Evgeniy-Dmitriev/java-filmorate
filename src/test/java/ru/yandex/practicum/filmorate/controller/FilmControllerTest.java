@@ -6,7 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -22,7 +24,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController(new InMemoryFilmStorage());
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
     }
 
     @Test
@@ -34,7 +36,7 @@ class FilmControllerTest {
                 .duration(Duration.ofMinutes(169))
                 .build();
 
-        filmController.create(film);
+        filmController.addFilm(film);
         List<Film> films = new ArrayList<>(filmController.findAll());
 
         assertNotNull(films);
@@ -51,7 +53,7 @@ class FilmControllerTest {
                 .duration(Duration.ofMinutes(169))
                 .build();
 
-        Film addedFilm = filmController.create(film);
+        Film addedFilm = filmController.addFilm(film);
 
         assertNotNull(addedFilm);
         assertEquals(1, addedFilm.getId());
@@ -67,10 +69,10 @@ class FilmControllerTest {
                 .duration(Duration.ofMinutes(169))
                 .build();
 
-        Film addedFilm = filmController.create(film);
+        Film addedFilm = filmController.addFilm(film);
 
         Film film2 = Film.builder()
-                .id(1)
+                .id(1L)
                 .name("Интерстеллар 2")
                 .description("Научно-фантастический фильм 2")
                 .releaseDate(LocalDate.of(2014, 11, 7))
@@ -95,7 +97,7 @@ class FilmControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.create(film);
+            filmController.addFilm(film);
         });
 
         assertTrue(exception.getMessage().contains("Название не может быть пустым"));
@@ -111,7 +113,7 @@ class FilmControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.create(film);
+            filmController.addFilm(film);
         });
 
         assertTrue(exception.getMessage().contains("Название не может быть пустым"));
@@ -127,7 +129,7 @@ class FilmControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.create(film);
+            filmController.addFilm(film);
         });
 
         assertTrue(exception.getMessage().contains("Максимальная длина описания — 200 символов"));
@@ -142,7 +144,7 @@ class FilmControllerTest {
                 .duration(Duration.ofMinutes(120))
                 .build();
 
-        Film addedFilm = filmController.create(film);
+        Film addedFilm = filmController.addFilm(film);
 
         assertNotNull(addedFilm);
         assertEquals(200, addedFilm.getDescription().length());
@@ -158,7 +160,7 @@ class FilmControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.create(film);
+            filmController.addFilm(film);
         });
 
         assertTrue(exception.getMessage().contains("Дата релиза — не раньше 28 декабря 1895 года"));
@@ -173,7 +175,7 @@ class FilmControllerTest {
                 .duration(Duration.ofMinutes(120))
                 .build();
 
-        Film addedFilm = filmController.create(film);
+        Film addedFilm = filmController.addFilm(film);
 
         assertNotNull(addedFilm);
         assertEquals(LocalDate.of(1895, 12, 28), addedFilm.getReleaseDate());
@@ -189,7 +191,7 @@ class FilmControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.create(film);
+            filmController.addFilm(film);
         });
 
         assertTrue(exception.getMessage().contains("Продолжительность фильма должна быть положительным числом"));
@@ -205,7 +207,7 @@ class FilmControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            filmController.create(film);
+            filmController.addFilm(film);
         });
 
         assertTrue(exception.getMessage().contains("Продолжительность фильма должна быть положительным числом"));
@@ -215,7 +217,7 @@ class FilmControllerTest {
     @Test
     void testUpdateNonExistingFilm() {
         Film film = Film.builder()
-                .id(999)
+                .id(999L)
                 .name("Тестовое название")
                 .description("Тестовое описание")
                 .releaseDate(LocalDate.of(2020, 1, 1))

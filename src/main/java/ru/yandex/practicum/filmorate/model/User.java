@@ -9,7 +9,7 @@ import java.util.Set;
 @Data
 @Builder
 public class User {
-    private long id;
+    private Long id;
     private String email;
     private String login;
     private String name;

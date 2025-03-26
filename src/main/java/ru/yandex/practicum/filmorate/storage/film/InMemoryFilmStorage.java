@@ -2,16 +2,10 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -19,76 +13,81 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
 
+    // GET "/films"
     @Override
-    public Collection<Film> getAllFilms() {
+    public Collection<Film> findAllFilms() {
         return films.values();
     }
 
+    // POST "/films"
     @Override
-    public Film postFilm(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            String message = "Название не может быть пустым";
-            log.error("Ошибка при добавлении фильма: {}", message);
-            throw new ValidationException(message);
-        }
-        validate(film);
+    public Film saveFilm(Film film) {
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Фильм добавлен: {}", film);
         return film;
     }
 
+    // PUT "/films"
     @Override
     public Film putFilm(Film newFilm) {
-        if (newFilm.getId() <= 0) {
-            String message = "Id должен быть указан";
-            log.error("Ошибка при обновлении фильма: {}", message);
-            throw new ConditionsNotMetException(message);
+        Film oldFilm = films.get(newFilm.getId());
+        if (newFilm.getName() != null) {
+            oldFilm.setName(newFilm.getName());
         }
-        if (films.containsKey(newFilm.getId())) {
-            validate(newFilm);
-            Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getName() != null) {
-                oldFilm.setName(newFilm.getName());
-            }
-            if (newFilm.getDescription() != null) {
-                oldFilm.setDescription(newFilm.getDescription());
-            }
-            if (newFilm.getReleaseDate() != null) {
-                oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            }
-            if (newFilm.getDuration() != null) {
-                oldFilm.setDuration(newFilm.getDuration());
-            }
-            log.info("Фильм обновлён: {}", oldFilm);
-            return oldFilm;
+        if (newFilm.getDescription() != null) {
+            oldFilm.setDescription(newFilm.getDescription());
         }
-        log.error("Фильм с id = {} не найден", newFilm.getId());
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        if (newFilm.getReleaseDate() != null) {
+            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+        }
+        if (newFilm.getDuration() != null) {
+            oldFilm.setDuration(newFilm.getDuration());
+        }
+        log.info("Фильм обновлён: {}", oldFilm);
+        return oldFilm;
     }
 
+    // GET "/films/{id}
     @Override
     public Optional<Film> findFilmById(Long filmId) {
         return Optional.ofNullable(films.get(filmId));
     }
 
-    private void validate(Film film) {
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
-            String message = "Максимальная длина описания — 200 символов";
-            log.error("Ошибка при валидации фильма: {}", message);
-            throw new ValidationException(message);
+    // PUT /films/{id}/like/{userId}
+    @Override
+    public void putLike(Film film, Long userId) {
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
         }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            String message = "Дата релиза — не раньше 28 декабря 1895 года";
-            log.error("Ошибка при валидации фильма: {}", message);
-            throw new ValidationException(message);
+        film.getLikes().add(userId);
+    }
+
+    // DELETE /films/{id}/like/{userId}
+    @Override
+    public void removeLike(Film film, Long userId) {
+        if (film.getLikes() != null) {
+            film.getLikes().remove(userId);
         }
-        if (film.getDuration().isNegative() || film.getDuration().isZero()) {
-            String message = "Продолжительность фильма должна быть положительным числом";
-            log.error("Ошибка при валидации фильма: {}", message);
-            throw new ValidationException(message);
-        }
-        log.debug("Валидация фильма прошла успешно: {}", film.getName());
+    }
+
+    // GET /films/popular?count={count}
+    @Override
+    public List<Film> findMostPopularFilms(int count) {
+        return findAllFilms()
+                .stream()
+                .sorted((film1, film2) -> {
+                    int likes1 = film1.getLikes() != null ? film1.getLikes().size() : 0;
+                    int likes2 = film2.getLikes() != null ? film2.getLikes().size() : 0;
+                    return Integer.compare(likes2, likes1);
+                })
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean hasFilmsId(Long filmId) {
+        return films.containsKey(filmId);
     }
 
     private long getNextId() {

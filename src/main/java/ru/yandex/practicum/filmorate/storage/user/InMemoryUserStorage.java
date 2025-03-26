@@ -2,16 +2,10 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -19,81 +13,92 @@ public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
 
+    // GET "/users"
     @Override
-    public Collection<User> getAllUsers() {
+    public Collection<User> findAllUsers() {
         return users.values();
     }
 
+    // POST "/users"
     @Override
-    public User postUser(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            String message = "Электронная почта не может быть пустой и должна содержать символ @";
-            log.error("Failed to create user: {}", message);
-            throw new ValidationException(message);
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            String message = "Логин не может быть пустым и содержать пробелы";
-            log.error("Failed to create user: {}", message);
-            throw new ValidationException(message);
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            String message = "Дата рождения не может быть в будущем";
-            log.error("Failed to create user: {}", message);
-            throw new ValidationException(message);
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.debug("Имя пользователя пустое, в качестве имени будет использован логин: {}", user.getLogin());
-            user.setName(user.getLogin());
-        }
+    public User saveUser(User user) {
         user.setId(getNextId());
+        user.setFriends(new HashSet<>());
         users.put(user.getId(), user);
         log.info("Пользователь добавлен: {}", user);
         return user;
     }
 
+    // PUT "/users"
     @Override
     public User putUser(User newUser) {
-        if (newUser.getId() <= 0) {
-            String message = "Id должен быть указан";
-            log.error("Ошибка при обновлении фильма: {}", message);
-            throw new ConditionsNotMetException(message);
+        User oldUser = users.get(newUser.getId());
+        if (newUser.getEmail() != null) {
+            oldUser.setEmail(newUser.getEmail());
         }
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-            if (!newUser.getEmail().contains("@")) {
-                throw new ValidationException("Электронная почта должна содержать символ @");
-            }
-            if (newUser.getLogin().contains(" ")) {
-                throw new ValidationException("Логин не может содержать пробелы");
-            }
-            if (newUser.getBirthday().isAfter(LocalDate.now())) {
-                throw new ValidationException("Дата рождения не может быть в будущем");
-            }
-            if (newUser.getEmail() != null) {
-                oldUser.setEmail(newUser.getEmail());
-            }
-            if (newUser.getLogin() != null) {
-                oldUser.setLogin(newUser.getLogin());
-            }
-            if (newUser.getBirthday() != null) {
-                oldUser.setBirthday(newUser.getBirthday());
-            }
-            if (newUser.getName() != null) {
-                oldUser.setName(newUser.getName());
-            }
-            if (newUser.getName() == null || newUser.getName().isBlank()) {
-                oldUser.setName(newUser.getLogin());
-            }
-            log.info("Пользователь обновлён: {}", oldUser);
-            return oldUser;
+        if (newUser.getLogin() != null) {
+            oldUser.setLogin(newUser.getLogin());
         }
-        log.error("Пользователь с id = {} не найден", newUser.getId());
-        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+        if (newUser.getBirthday() != null) {
+            oldUser.setBirthday(newUser.getBirthday());
+        }
+        if (newUser.getName() != null) {
+            oldUser.setName(newUser.getName());
+        }
+        if (newUser.getName() == null || newUser.getName().isBlank()) {
+            oldUser.setName(newUser.getLogin());
+        }
+        log.info("Пользователь обновлён: {}", oldUser);
+        return oldUser;
     }
 
+    // GET "/users/{id}"
     @Override
     public Optional<User> findUserById(Long id) {
         return Optional.ofNullable(users.get(id));
+    }
+
+    // PUT /users/{id}/friends/{friendId}
+    @Override
+    public void addFriend(User user, User friend) {
+        user.getFriends().add(friend.getId());
+        friend.getFriends().add(user.getId());
+        log.info("Добавлен друг {} пользователю {}", friend, user);
+    }
+
+    // DELETE /users/{id}/friends/{friendId}
+    @Override
+    public void removeFriend(User user, User friend) {
+        user.getFriends().remove(friend.getId());
+        friend.getFriends().remove(user.getId());
+        log.info("У пользователя {} удалён друг {}", user, friend);
+    }
+
+    // GET /users/{id}/friends
+    @Override
+    public List<User> findFriends(User user){
+        log.info("Получен список друзей - {} человек пользователя {}", user.getFriends().size(), user);
+        return user.getFriends().stream()
+                .map(users::get)
+                .collect(Collectors.toList());
+    }
+
+    // GET /users/{id}/friends/common/{otherId}
+    @Override
+    public List<User> findCommonFriends(User user, User otherUser) {
+        log.info("Получен список общих друзей пользователей {}, {}", user, otherUser);
+        return user.getFriends()
+                .stream()
+                .filter(otherUser.getFriends()::contains)
+                .map(this::findUserById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean hasUsersId(Long userId) {
+        return users.containsKey(userId);
     }
 
     private long getNextId() {

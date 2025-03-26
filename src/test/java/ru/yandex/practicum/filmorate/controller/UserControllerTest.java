@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController(new InMemoryUserStorage());
+        userController = new UserController(new UserService(new InMemoryUserStorage()));
     }
 
     @Test
@@ -33,7 +34,7 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        userController.create(user);
+        userController.addUser(user);
         List<User> users = new ArrayList<>(userController.findAll());
 
         assertNotNull(users);
@@ -42,7 +43,7 @@ class UserControllerTest {
     }
 
     @Test
-    void testCreateValidUser() {
+    void testAddUserValidUser() {
         User user = User.builder()
                 .email("ivan@example.com")
                 .login("user123")
@@ -50,7 +51,7 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        User createdUser = userController.create(user);
+        User createdUser = userController.addUser(user);
 
         assertNotNull(createdUser);
         assertEquals(1, createdUser.getId());
@@ -66,10 +67,10 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        User createdUser = userController.create(user);
+        User createdUser = userController.addUser(user);
 
         User user2 = User.builder()
-                .id(1)
+                .id(1L)
                 .email("ivan@example.com")
                 .login("user321")
                 .name("Пётр Петров")
@@ -94,7 +95,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Логин не может быть пустым и содержать пробелы"));
@@ -110,7 +111,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Логин не может быть пустым и содержать пробелы"));
@@ -126,7 +127,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Логин не может быть пустым и содержать пробелы"));
@@ -142,7 +143,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Электронная почта не может быть пустой и должна содержать символ @"));
@@ -158,7 +159,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Электронная почта не может быть пустой и должна содержать символ @"));
@@ -174,7 +175,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Электронная почта не может быть пустой и должна содержать символ @"));
@@ -189,7 +190,7 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        User createdUser = userController.create(user);
+        User createdUser = userController.addUser(user);
 
         assertNotNull(createdUser);
         assertEquals("user123", createdUser.getName());
@@ -204,7 +205,7 @@ class UserControllerTest {
                 .birthday(LocalDate.of(1990, 1, 1))
                 .build();
 
-        User createdUser = userController.create(user);
+        User createdUser = userController.addUser(user);
 
         assertNotNull(createdUser);
         assertEquals("user123", createdUser.getName());
@@ -220,7 +221,7 @@ class UserControllerTest {
                 .build();
 
         Exception exception = assertThrows(ValidationException.class, () -> {
-            userController.create(user);
+            userController.addUser(user);
         });
 
         assertTrue(exception.getMessage().contains("Дата рождения не может быть в будущем"));
@@ -235,7 +236,7 @@ class UserControllerTest {
                 .birthday(LocalDate.now())
                 .build();
 
-        User createdUser = userController.create(user);
+        User createdUser = userController.addUser(user);
 
         assertNotNull(createdUser);
         assertEquals(LocalDate.now(), createdUser.getBirthday());
@@ -244,7 +245,7 @@ class UserControllerTest {
     @Test
     void testUpdateNonExistingUser() {
         User user = User.builder()
-                .id(999)
+                .id(999L)
                 .email("ivan@example.com")
                 .login("user123")
                 .name("Иван Иванов")
