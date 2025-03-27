@@ -24,12 +24,10 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    // GET "/users"
     public Collection<User> getAllUsers() {
         return userStorage.findAllUsers();
     }
 
-    // POST "/users"
     public User createUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             String message = "Электронная почта не может быть пустой и должна содержать символ @";
@@ -54,7 +52,6 @@ public class UserService {
         return userStorage.saveUser(user);
     }
 
-    // PUT "/users"
     public User updateUser(User newUser) {
         if (newUser.getId() == null) {
             String message = "Id должен быть указан";
@@ -77,13 +74,11 @@ public class UserService {
         throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
     }
 
-    // GET "/users/{id}"
     public User getUserById(Long id) {
         return userStorage.findUserById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
-    // PUT /users/{id}/friends/{friendId}
     public void addFriend(Long userId, Long friendId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
@@ -93,7 +88,6 @@ public class UserService {
         userStorage.addFriend(user, friend);
     }
 
-    // DELETE /users/{id}/friends/{friendId}
     public void removeFriend(Long userId, Long friendId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
@@ -103,14 +97,12 @@ public class UserService {
         userStorage.removeFriend(user, friend);
     }
 
-    // GET /users/{id}/friends
     public List<User> getFriends(Long userId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         return userStorage.findFriends(user);
     }
 
-    // GET /users/{id}/friends/common/{otherId}
     public List<User> getCommonFriends(Long userId, Long otherId) {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));

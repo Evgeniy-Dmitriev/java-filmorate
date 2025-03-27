@@ -27,12 +27,10 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    // GET "/films"
     public Collection<Film> getAllFilms() {
         return filmStorage.findAllFilms();
     }
 
-    // POST "/films"
     public Film createFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             String message = "Название не может быть пустым";
@@ -43,7 +41,6 @@ public class FilmService {
         return filmStorage.saveFilm(film);
     }
 
-    // PUT "/films"
     public Film updateFilm(Film newFilm) {
         if (newFilm.getId() == null) {
             String message = "Id должен быть указан";
@@ -58,13 +55,11 @@ public class FilmService {
         throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
-    // GET "/films/{id}"
     public Film getFilmById(Long id) {
         return filmStorage.findFilmById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
     }
 
-    // PUT /films/{id}/like/{userId}
     public void addLike(Long filmId, Long userId) {
         Film film = filmStorage.findFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id: " + filmId + " не найден"));
@@ -74,7 +69,6 @@ public class FilmService {
         filmStorage.putLike(film, userId);
     }
 
-    // DELETE /films/{id}/like/{userId}
     public void removeLike(Long filmId, Long userId) {
         Film film = filmStorage.findFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id: " + filmId + " не найден"));
@@ -84,7 +78,6 @@ public class FilmService {
         filmStorage.removeLike(film, userId);
     }
 
-    // GET /films/popular?count={count}
     public List<Film> getMostPopularFilms(int count) {
         return filmStorage.findMostPopularFilms(count);
     }

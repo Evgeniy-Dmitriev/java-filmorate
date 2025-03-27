@@ -13,13 +13,11 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
 
-    // GET "/films"
     @Override
     public Collection<Film> findAllFilms() {
         return films.values();
     }
 
-    // POST "/films"
     @Override
     public Film saveFilm(Film film) {
         film.setId(getNextId());
@@ -28,7 +26,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    // PUT "/films"
     @Override
     public Film putFilm(Film newFilm) {
         Film oldFilm = films.get(newFilm.getId());
@@ -48,13 +45,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return oldFilm;
     }
 
-    // GET "/films/{id}
     @Override
     public Optional<Film> findFilmById(Long filmId) {
         return Optional.ofNullable(films.get(filmId));
     }
 
-    // PUT /films/{id}/like/{userId}
     @Override
     public void putLike(Film film, Long userId) {
         if (film.getLikes() == null) {
@@ -63,7 +58,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.getLikes().add(userId);
     }
 
-    // DELETE /films/{id}/like/{userId}
     @Override
     public void removeLike(Film film, Long userId) {
         if (film.getLikes() != null) {
@@ -71,7 +65,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-    // GET /films/popular?count={count}
     @Override
     public List<Film> findMostPopularFilms(int count) {
         return findAllFilms()

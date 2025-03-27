@@ -13,13 +13,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
 
-    // GET "/users"
     @Override
     public Collection<User> findAllUsers() {
         return users.values();
     }
 
-    // POST "/users"
     @Override
     public User saveUser(User user) {
         user.setId(getNextId());
@@ -29,7 +27,6 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
-    // PUT "/users"
     @Override
     public User putUser(User newUser) {
         User oldUser = users.get(newUser.getId());
@@ -52,13 +49,11 @@ public class InMemoryUserStorage implements UserStorage {
         return oldUser;
     }
 
-    // GET "/users/{id}"
     @Override
     public Optional<User> findUserById(Long id) {
         return Optional.ofNullable(users.get(id));
     }
 
-    // PUT /users/{id}/friends/{friendId}
     @Override
     public void addFriend(User user, User friend) {
         user.getFriends().add(friend.getId());
@@ -66,7 +61,6 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("Добавлен друг {} пользователю {}", friend, user);
     }
 
-    // DELETE /users/{id}/friends/{friendId}
     @Override
     public void removeFriend(User user, User friend) {
         user.getFriends().remove(friend.getId());
@@ -74,7 +68,6 @@ public class InMemoryUserStorage implements UserStorage {
         log.info("У пользователя {} удалён друг {}", user, friend);
     }
 
-    // GET /users/{id}/friends
     @Override
     public List<User> findFriends(User user) {
         log.info("Получен список друзей - {} человек пользователя {}", user.getFriends().size(), user);
@@ -83,7 +76,6 @@ public class InMemoryUserStorage implements UserStorage {
                 .collect(Collectors.toList());
     }
 
-    // GET /users/{id}/friends/common/{otherId}
     @Override
     public List<User> findCommonFriends(User user, User otherUser) {
         log.info("Получен список общих друзей пользователей {}, {}", user, otherUser);
