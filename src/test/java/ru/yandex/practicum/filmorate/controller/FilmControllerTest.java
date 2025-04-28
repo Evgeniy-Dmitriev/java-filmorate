@@ -29,12 +29,11 @@ class FilmControllerTest {
 
     @Test
     void testFindAll() {
-        Film film = Film.builder()
-                .name("Интерстеллар")
-                .description("Научно-фантастический фильм")
-                .releaseDate(LocalDate.of(2014, 11, 7))
-                .duration(Duration.ofMinutes(169))
-                .build();
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Научно-фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 7));
+        film.setDuration(Duration.ofMinutes(169));
 
         filmController.addFilm(film);
         List<Film> films = new ArrayList<>(filmController.findAll());
@@ -46,12 +45,11 @@ class FilmControllerTest {
 
     @Test
     void testAddValidFilm() {
-        Film film = Film.builder()
-                .name("Интерстеллар")
-                .description("Научно-фантастический фильм")
-                .releaseDate(LocalDate.of(2014, 11, 7))
-                .duration(Duration.ofMinutes(169))
-                .build();
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Научно-фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 7));
+        film.setDuration(Duration.ofMinutes(169));
 
         Film addedFilm = filmController.addFilm(film);
 
@@ -62,22 +60,20 @@ class FilmControllerTest {
 
     @Test
     void testUpdateValidFilm() {
-        Film film = Film.builder()
-                .name("Интерстеллар")
-                .description("Научно-фантастический фильм")
-                .releaseDate(LocalDate.of(2014, 11, 7))
-                .duration(Duration.ofMinutes(169))
-                .build();
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Научно-фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 7));
+        film.setDuration(Duration.ofMinutes(169));
 
         Film addedFilm = filmController.addFilm(film);
 
-        Film film2 = Film.builder()
-                .id(1L)
-                .name("Интерстеллар 2")
-                .description("Научно-фантастический фильм 2")
-                .releaseDate(LocalDate.of(2014, 11, 7))
-                .duration(Duration.ofMinutes(169))
-                .build();
+        Film film2 = new Film();
+        film2.setId(1L);
+        film2.setName("Интерстеллар 2");
+        film2.setDescription("Научно-фантастический фильм 2");
+        film2.setReleaseDate(LocalDate.of(2014, 11, 7));
+        film2.setDuration(Duration.ofMinutes(169));
 
         filmController.update(film2);
 
@@ -89,12 +85,11 @@ class FilmControllerTest {
 
     @Test
     void testEmptyName() {
-        Film film = Film.builder()
-                .name("")
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ofMinutes(120))
-                .build();
+        Film film = new Film();
+        film.setName("");
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ofMinutes(120));
 
         Exception exception = assertThrows(ValidationException.class, () -> {
             filmController.addFilm(film);
@@ -105,12 +100,11 @@ class FilmControllerTest {
 
     @Test
     void testNullName() {
-        Film film = Film.builder()
-                .name(null)
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ofMinutes(120))
-                .build();
+        Film film = new Film();
+        film.setName(null);
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ofMinutes(120));
 
         Exception exception = assertThrows(ValidationException.class, () -> {
             filmController.addFilm(film);
@@ -121,12 +115,11 @@ class FilmControllerTest {
 
     @Test
     void testDescriptionMaxLength() {
-        Film film = Film.builder()
-                .name("Тестовое название")
-                .description("А".repeat(201))
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ofMinutes(120))
-                .build();
+        Film film = new Film();
+        film.setName("Тестовое название");
+        film.setDescription("А".repeat(201));
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ofMinutes(120));
 
         Exception exception = assertThrows(ValidationException.class, () -> {
             filmController.addFilm(film);
@@ -137,12 +130,11 @@ class FilmControllerTest {
 
     @Test
     void testDescriptionExactlyMaxLength() {
-        Film film = Film.builder()
-                .name("Тестовое название")
-                .description("А".repeat(200))
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ofMinutes(120))
-                .build();
+        Film film = new Film();
+        film.setName("Тестовое название");
+        film.setDescription("А".repeat(200));
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ofMinutes(120));
 
         Film addedFilm = filmController.addFilm(film);
 
@@ -152,12 +144,11 @@ class FilmControllerTest {
 
     @Test
     void testReleaseDate() {
-        Film film = Film.builder()
-                .name("Тестовое название")
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(1895, 12, 27))
-                .duration(Duration.ofMinutes(120))
-                .build();
+        Film film = new Film();
+        film.setName("Тестовое название");
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
+        film.setDuration(Duration.ofMinutes(120));
 
         Exception exception = assertThrows(ValidationException.class, () -> {
             filmController.addFilm(film);
@@ -168,12 +159,11 @@ class FilmControllerTest {
 
     @Test
     void testExactlyEarliestReleaseDate() {
-        Film film = Film.builder()
-                .name("Тестовое название")
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(1895, 12, 28))
-                .duration(Duration.ofMinutes(120))
-                .build();
+        Film film = new Film();
+        film.setName("Тестовое название");
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(1895, 12, 28));
+        film.setDuration(Duration.ofMinutes(120));
 
         Film addedFilm = filmController.addFilm(film);
 
@@ -183,12 +173,11 @@ class FilmControllerTest {
 
     @Test
     void testNegativeDuration() {
-        Film film = Film.builder()
-                .name("Тестовое название")
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ofMinutes(-1))
-                .build();
+        Film film = new Film();
+        film.setName("Тестовое название");
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ofMinutes(-1));
 
         Exception exception = assertThrows(ValidationException.class, () -> {
             filmController.addFilm(film);
@@ -199,12 +188,11 @@ class FilmControllerTest {
 
     @Test
     void testZeroDuration() {
-        Film film = Film.builder()
-                .name("Тестовое название")
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ZERO)
-                .build();
+        Film film = new Film();
+        film.setName("Тестовое название");
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ZERO);
 
         Exception exception = assertThrows(ValidationException.class, () -> {
             filmController.addFilm(film);
@@ -216,13 +204,12 @@ class FilmControllerTest {
 
     @Test
     void testUpdateNonExistingFilm() {
-        Film film = Film.builder()
-                .id(999L)
-                .name("Тестовое название")
-                .description("Тестовое описание")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(Duration.ZERO)
-                .build();
+        Film film = new Film();
+        film.setId(999L);
+        film.setName("Тестовое название");
+        film.setDescription("Тестовое описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(Duration.ZERO);
 
         Exception exception = assertThrows(NotFoundException.class, () -> {
             filmController.update(film);

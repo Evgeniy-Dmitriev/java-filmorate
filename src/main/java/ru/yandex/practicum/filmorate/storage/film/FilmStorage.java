@@ -12,11 +12,11 @@ public interface FilmStorage {
 
     Film saveFilm(Film film);
 
-    Film putFilm(Film film);
+    Film updateFilm(Film film);
 
     Optional<Film> findFilmById(Long filmId);
 
-    void putLike(Film film, Long userId);
+    void addLike(Film film, Long userId);
 
     void removeLike(Film film, Long userId);
 
