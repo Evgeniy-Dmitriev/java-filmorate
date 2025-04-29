@@ -23,12 +23,12 @@ public class RatingDbStorage {
     }
 
     public List<Rating> findAllRatings() {
-        String sql = "SELECT * FROM rating ORDER BY rating_id";
+        String sql = "SELECT * FROM ratings ORDER BY rating_id";
         return jdbcTemplate.query(sql, mapper);
     }
 
     public Optional<Rating> findRatingById(Long id) {
-        String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
+        String sql = "SELECT * FROM ratings WHERE rating_id = ?";
         try {
             Rating mpa = jdbcTemplate.queryForObject(sql, mapper, id);
             return Optional.ofNullable(mpa);

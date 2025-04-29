@@ -98,9 +98,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> findFilmById(Long filmId) {
-        String sql = "SELECT f.*, r.rating_id, m.name as mpa_name " +
+        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name " +
                 "FROM films f " +
-                "JOIN rating r ON f.rating_id = r.rating_id " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
                 "WHERE f.film_id = ?";
         try {
             Film film = jdbcTemplate.queryForObject(sql, mapper, filmId);
@@ -128,10 +128,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findMostPopularFilms(int count) {
-        String sql = "SELECT f.*, r.rating_id, m.name as mpa_name, " +
+        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
                 "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
                 "FROM films f " +
-                "JOIN rating r ON f.rating_id = r.rating_id " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
 
