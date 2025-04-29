@@ -4,26 +4,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Duration;
 import java.util.*;
 
 @Repository
 @Qualifier("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final RowMapper<Film> mapper;
+
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, RowMapper<Film> mapper) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.mapper = mapper;
+
     }
 
     @Override
@@ -31,7 +34,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.*, r.rating_id, r.name as mpa_name " +
                 "FROM films f " +
                 "JOIN ratings r ON f.rating_id = r.rating_id";
-        List<Film> films = jdbcTemplate.query(sql, mapper);
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
 
         // Загружаем жанры и лайки для всех фильмов
         for (Film film : films) {
@@ -97,13 +100,22 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public boolean deleteFilmById(Long id) {
+        jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", id);
+        jdbcTemplate.update("DELETE FROM likes WHERE film_id = ?", id);
+
+        String sql = "DELETE FROM films WHERE film_id = ?";
+        return jdbcTemplate.update(sql, id) > 0;
+    }
+
+    @Override
     public Optional<Film> findFilmById(Long filmId) {
         String sql = "SELECT f.*, r.rating_id, r.name as mpa_name " +
                 "FROM films f " +
                 "JOIN ratings r ON f.rating_id = r.rating_id " +
                 "WHERE f.film_id = ?";
         try {
-            Film film = jdbcTemplate.queryForObject(sql, mapper, filmId);
+            Film film = jdbcTemplate.queryForObject(sql, this::mapRowToFilm, filmId);
             if (film != null) {
                 loadFilmGenres(film);
                 loadFilmLikes(film);
@@ -135,7 +147,7 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
 
-        List<Film> films = jdbcTemplate.query(sql, mapper, count);
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, count);
 
         for (Film film : films) {
             loadFilmGenres(film);
@@ -150,6 +162,23 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId);
         return count != null && count > 0;
+    }
+
+    private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
+        Film film = new Film();
+        film.setId(resultSet.getLong("film_id"));
+        film.setName(resultSet.getString("name"));
+        film.setDescription(resultSet.getString("description"));
+        film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
+        int durationMinutes = resultSet.getInt("duration");
+        film.setDuration(Duration.ofMinutes(durationMinutes));
+
+        Rating mpa = new Rating();
+        mpa.setId(resultSet.getLong("rating_id"));
+        mpa.setName(resultSet.getString("mpa_name"));
+        film.setMpa(mpa);
+
+        return film;
     }
 
     private void saveFilmGenres(Film film) {

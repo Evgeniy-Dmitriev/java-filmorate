@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -19,25 +21,23 @@ import java.util.Optional;
 @Qualifier("userDbStorage")
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final RowMapper<User> mapper;
 
     @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate, RowMapper<User> mapper) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.mapper = mapper;
     }
 
     @Override
     public Collection<User> findAllUsers() {
         String sql = "SELECT * FROM users";
-        return jdbcTemplate.query(sql, mapper);
+        return jdbcTemplate.query(sql, this::mapRowToUser);
     }
 
     @Override
     public Optional<User> findUserById(Long id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try {
-            User user = jdbcTemplate.queryForObject(sql, mapper, id);
+            User user = jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
             return Optional.ofNullable(user);
         } catch (EmptyResultDataAccessException ignored) {
             return Optional.empty();
@@ -81,6 +81,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public boolean deleteUserById(Long id) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        return jdbcTemplate.update(sql, id) > 0;
+    }
+
+    @Override
     public void addFriend(User user, User friend) {
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, user.getId(), friend.getId());
@@ -97,7 +103,7 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT u.* FROM users u " +
                 "JOIN friends f ON u.user_id = f.friend_id " +
                 "WHERE f.user_id = ?";
-        return jdbcTemplate.query(sql, mapper, user.getId());
+        return jdbcTemplate.query(sql, this::mapRowToUser, user.getId());
     }
 
     @Override
@@ -106,7 +112,7 @@ public class UserDbStorage implements UserStorage {
                 "JOIN friends f1 ON u.user_id = f1.friend_id " +
                 "JOIN friends f2 ON u.user_id = f2.friend_id " +
                 "WHERE f1.user_id = ? AND f2.user_id = ?";
-        return jdbcTemplate.query(sql, mapper, user.getId(), otherUser.getId());
+        return jdbcTemplate.query(sql, this::mapRowToUser, user.getId(), otherUser.getId());
     }
 
     @Override
@@ -114,5 +120,16 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null && count > 0;
+    }
+
+    private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
+        User user = User.builder()
+                .id(resultSet.getLong("user_id"))
+                .email(resultSet.getString("email"))
+                .login(resultSet.getString("login"))
+                .name(resultSet.getString("name"))
+                .birthday(resultSet.getDate("birthday").toLocalDate())
+                .build();
+        return user;
     }
 }

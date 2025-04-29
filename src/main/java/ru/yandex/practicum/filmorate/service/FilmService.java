@@ -57,6 +57,11 @@ public class FilmService {
         throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
+    public boolean deleteFilmById(Long id) {
+        if (id == null || id < 1) throw new IllegalArgumentException("Фильм с id = " + id + " не найден");
+        return filmStorage.deleteFilmById(id);
+    }
+
     public Film getFilmById(Long id) {
         return filmStorage.findFilmById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));

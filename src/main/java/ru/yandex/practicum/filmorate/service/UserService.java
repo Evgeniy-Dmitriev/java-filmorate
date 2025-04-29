@@ -75,6 +75,11 @@ public class UserService {
         throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
     }
 
+    public boolean deleteUserById(Long id) {
+        if (id == null || id < 1) throw new IllegalArgumentException("Invalid User id");
+        return userStorage.deleteUserById(id);
+    }
+
     public User getUserById(Long id) {
         return userStorage.findUserById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
