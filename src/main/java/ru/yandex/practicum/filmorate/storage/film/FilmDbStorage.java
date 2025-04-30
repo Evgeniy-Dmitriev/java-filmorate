@@ -82,7 +82,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getName(),
                 film.getDescription(),
                 java.sql.Date.valueOf(film.getReleaseDate()),
-                film.getDuration(),
+                film.getDuration().toMinutes(),
                 film.getMpa().getId(),
                 film.getId());
 

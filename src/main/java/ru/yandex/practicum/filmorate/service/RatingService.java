@@ -26,8 +26,9 @@ public class RatingService {
                 .toList();
     }
 
-    public Optional<Rating> getRatingById(Long id) {
+    public Rating getRatingById(Long id) {
         if (id == null || id < 1) throw new IllegalArgumentException("Неверный id рейтинга");
-        return ratingDbStorage.findRatingById(id);
+        return ratingDbStorage.findRatingById(id)
+                .orElseThrow(() -> new NotFoundException("Рейтинг с id " + id + " не найден"));
     }
 }
