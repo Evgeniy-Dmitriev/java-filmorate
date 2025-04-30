@@ -21,12 +21,18 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final RatingService ratingService;
+    private final GenreService genreService;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       RatingService ratingService,
+                       GenreService genreService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.ratingService = ratingService;
+        this.genreService = genreService;
     }
 
     public Collection<Film> getAllFilms() {
@@ -40,6 +46,8 @@ public class FilmService {
             throw new ValidationException(message);
         }
         validate(film);
+        ratingService.exists(film);
+        genreService.exists(film);
         return filmStorage.saveFilm(film);
     }
 
@@ -51,6 +59,8 @@ public class FilmService {
         }
         if (filmStorage.hasFilmsId(newFilm.getId())) {
             validate(newFilm);
+            ratingService.exists(newFilm);
+            genreService.exists(newFilm);
             return filmStorage.updateFilm(newFilm);
         }
         log.error("Фильм с id = {} не найден", newFilm.getId());

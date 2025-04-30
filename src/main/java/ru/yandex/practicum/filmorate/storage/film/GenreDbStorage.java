@@ -31,7 +31,7 @@ public class GenreDbStorage {
         try {
             Genre genre = jdbcTemplate.queryForObject(sql, this::mapRowToGenre, id);
             return Optional.ofNullable(genre);
-        } catch (EmptyResultDataAccessException ignored) {
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
