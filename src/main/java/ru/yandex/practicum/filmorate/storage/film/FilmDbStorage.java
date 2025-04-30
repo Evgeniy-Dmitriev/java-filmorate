@@ -58,7 +58,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
 
-            ps.setLong(4, film.getDuration().toMinutes());
+            ps.setLong(4, film.getDuration().toMillis());
 
             ps.setLong(5, film.getMpa().getId());
             return ps;
@@ -82,7 +82,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getName(),
                 film.getDescription(),
                 java.sql.Date.valueOf(film.getReleaseDate()),
-                film.getDuration().toMinutes(),
+                film.getDuration().toMillis(),
                 film.getMpa().getId(),
                 film.getId());
 
@@ -170,8 +170,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setName(resultSet.getString("name"));
         film.setDescription(resultSet.getString("description"));
         film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
-        int durationMinutes = resultSet.getInt("duration");
-        film.setDuration(Duration.ofMinutes(durationMinutes));
+        int durationMillis = resultSet.getInt("duration");
+        film.setDuration(Duration.ofMillis(durationMillis));
 
         Rating mpa = new Rating();
         mpa.setId(resultSet.getLong("rating_id"));
