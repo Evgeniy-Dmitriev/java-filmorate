@@ -12,7 +12,9 @@ public interface UserStorage {
 
     User saveUser(User user);
 
-    User putUser(User user);
+    User updateUser(User user);
+
+    boolean deleteUserById(Long id);
 
     Optional<User> findUserById(Long id);
 

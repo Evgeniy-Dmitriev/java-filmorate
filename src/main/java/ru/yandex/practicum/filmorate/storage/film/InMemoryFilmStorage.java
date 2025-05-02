@@ -27,7 +27,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film putFilm(Film newFilm) {
+    public Film updateFilm(Film newFilm) {
         Film oldFilm = films.get(newFilm.getId());
         if (newFilm.getName() != null) {
             oldFilm.setName(newFilm.getName());
@@ -46,15 +46,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean deleteFilmById(Long id) {
+        films.remove(id);
+        return true;
+    }
+
+    @Override
     public Optional<Film> findFilmById(Long filmId) {
         return Optional.ofNullable(films.get(filmId));
     }
 
     @Override
-    public void putLike(Film film, Long userId) {
-        if (film.getLikes() == null) {
-            film.setLikes(new HashSet<>());
-        }
+    public void addLike(Film film, Long userId) {
         film.getLikes().add(userId);
     }
 
