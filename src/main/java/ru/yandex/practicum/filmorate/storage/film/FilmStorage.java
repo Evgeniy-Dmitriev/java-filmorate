@@ -26,5 +26,5 @@ public interface FilmStorage {
 
     boolean hasFilmsId(Long filmId);
 
-    List<Film> getCommonFilms(long userId, long friendId);
+    List<Film> getCommonFilms(Long userId, Long friendId);
 }

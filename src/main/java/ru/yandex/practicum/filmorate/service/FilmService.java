@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -20,16 +21,19 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final UserService userService;
     private final RatingService ratingService;
     private final GenreService genreService;
 
     @Autowired
     public FilmService(FilmStorage filmStorage,
                        UserStorage userStorage,
+                       UserService userService,
                        RatingService ratingService,
                        GenreService genreService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.userService = userService;
         this.ratingService = ratingService;
         this.genreService = genreService;
     }
@@ -98,10 +102,16 @@ public class FilmService {
         return filmStorage.findMostPopularFilms(count);
     }
 
-    public List<Film> getCommonFilms(long userId, long friendId) {
-        userStorage.findUserById(userId);
-        userStorage.findUserById(friendId);
-        return filmStorage.getCommonFilms(userId, friendId);
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            throw new IllegalArgumentException("Пользователь и друг не могут быть одним и тем же человеком.");
+        }
+        userService.getUserById(userId);
+        userService.getUserById(friendId);
+
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        return commonFilms != null ? commonFilms : Collections.emptyList();
     }
 
     private void validate(Film film) {
