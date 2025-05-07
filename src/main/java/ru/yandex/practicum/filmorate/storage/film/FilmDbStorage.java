@@ -17,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -66,7 +65,7 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, keyHolder);
 
-        film.setId(keyHolder.getKey().longValue());
+        film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             saveFilmGenres(film);
