@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -22,16 +24,19 @@ public class FilmService {
     private final UserStorage userStorage;
     private final RatingService ratingService;
     private final GenreService genreService;
+    private final EventService eventService;
 
     @Autowired
     public FilmService(FilmStorage filmStorage,
                        UserStorage userStorage,
                        RatingService ratingService,
-                       GenreService genreService) {
+                       GenreService genreService,
+                       EventService eventService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.ratingService = ratingService;
         this.genreService = genreService;
+        this.eventService = eventService;
     }
 
     public Collection<Film> getAllFilms() {
@@ -82,6 +87,8 @@ public class FilmService {
         userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
 
+        eventService.createEvent(userId, EventType.LIKE, EventOperation.ADD, filmId);
+
         filmStorage.addLike(film, userId);
     }
 
@@ -90,6 +97,8 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Фильм с id: " + filmId + " не найден"));
         userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
+
+        eventService.createEvent(userId, EventType.LIKE, EventOperation.REMOVE, filmId);
 
         filmStorage.removeLike(film, userId);
     }

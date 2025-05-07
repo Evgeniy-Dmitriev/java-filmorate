@@ -7,7 +7,10 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.Event;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -18,10 +21,12 @@ import java.util.List;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final EventService eventService;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(UserStorage userStorage, EventService eventService) {
         this.userStorage = userStorage;
+        this.eventService = eventService;
     }
 
     public Collection<User> getAllUsers() {
@@ -90,6 +95,8 @@ public class UserService {
         User friend = userStorage.findUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Друг с id: " + friendId + " не найден"));
 
+        eventService.createEvent(userId, EventType.FRIEND, EventOperation.ADD, friendId);
+
         userStorage.addFriend(user, friend);
     }
 
@@ -98,6 +105,8 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         User friend = userStorage.findUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Друг с id: " + friendId + " не найден"));
+
+        eventService.createEvent(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
 
         userStorage.removeFriend(user, friend);
     }
@@ -115,5 +124,10 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Другой пользователь с id: " + otherId + " не найден"));
 
         return userStorage.findCommonFriends(user, otherUser);
+    }
+
+    public List<Event> getFeed(Long userId) {
+        getUserById(userId);
+        return eventService.getFeed(userId);
     }
 }
