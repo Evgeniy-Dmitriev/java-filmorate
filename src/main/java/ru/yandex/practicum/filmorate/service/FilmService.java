@@ -98,6 +98,12 @@ public class FilmService {
         return filmStorage.findMostPopularFilms(count);
     }
 
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        userStorage.findUserById(userId);
+        userStorage.findUserById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     private void validate(Film film) {
         if (film.getDescription() != null && film.getDescription().length() > 200) {
             String message = "Максимальная длина описания — 200 символов";
