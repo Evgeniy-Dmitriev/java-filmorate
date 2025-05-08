@@ -15,7 +15,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(NotFoundException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getMessage(),"Объект не найден."
         );
     }
 
@@ -23,7 +23,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(ValidationException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getMessage(),"Объект не найден."
         );
     }
 
@@ -31,7 +31,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleConditionsNotMet(ConditionsNotMetException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getMessage(),"Ошибка со стороны сервера"
         );
     }
 }

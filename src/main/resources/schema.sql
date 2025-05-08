@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS films, mpa, genres, film_genres, users, likes, friends, directors, film_directors;
+
 CREATE TABLE IF NOT EXISTS ratings (
         rating_id BIGINT NOT NULL AUTO_INCREMENT,
         name VARCHAR(50) NOT NULL,
@@ -49,3 +51,14 @@ CREATE TABLE IF NOT EXISTS friends (
         CONSTRAINT friends_pk PRIMARY KEY (user_id, friend_id)
 );
 
+CREATE TABLE IF NOT EXISTS directors (
+    director_id BIGINT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    CONSTRAINT director_pk PRIMARY KEY (director_id)
+);
+
+CREATE TABLE IF NOT EXISTS film_directors (
+film_id bigint REFERENCES films (film_id) ON DELETE CASCADE ON UPDATE CASCADE,
+director_id bigint REFERENCES directors (director_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
+CONSTRAINT film_director_pk PRIMARY KEY (film_id, director_id)
+);
