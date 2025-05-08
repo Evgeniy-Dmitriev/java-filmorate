@@ -66,7 +66,7 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, keyHolder);
 
-        film.setId(keyHolder.getKey().longValue());
+        film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             saveFilmGenres(film);
@@ -96,7 +96,6 @@ public class FilmDbStorage implements FilmStorage {
         if (rowsAffected == 0) {
             throw new InternalServerException("Не удалось обновить данные");
         }
-
 
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
