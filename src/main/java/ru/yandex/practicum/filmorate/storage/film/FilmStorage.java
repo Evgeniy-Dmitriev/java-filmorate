@@ -27,7 +27,7 @@ public interface FilmStorage {
     List<Film> findMostPopularFilms(int count);
 
     boolean hasFilmsId(Long filmId);
- 
+
     public Set<Long> findFilmLikes(User user);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
