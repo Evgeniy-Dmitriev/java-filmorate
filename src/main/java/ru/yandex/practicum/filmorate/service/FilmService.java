@@ -24,18 +24,21 @@ public class FilmService {
     private final UserService userService;
     private final RatingService ratingService;
     private final GenreService genreService;
+    private final DirectorService directorService;
 
     @Autowired
     public FilmService(FilmStorage filmStorage,
                        UserStorage userStorage,
                        UserService userService,
                        RatingService ratingService,
-                       GenreService genreService) {
+                       GenreService genreService,
+                       DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.userService = userService;
         this.ratingService = ratingService;
         this.genreService = genreService;
+        this.directorService = directorService;
     }
 
     public Collection<Film> getAllFilms() {
@@ -131,5 +134,20 @@ public class FilmService {
             throw new ValidationException(message);
         }
         log.debug("Валидация фильма прошла успешно: {}", film.getName());
+    }
+
+    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        List<Film> result;
+
+        switch (sortBy) {
+            case "year", "likes" -> result = filmStorage.getByDirector(directorId, sortBy);
+            default -> {
+                log.info("Попытка получить список фильмов по режиссёру с sortBy = {}", sortBy);
+                throw new NotFoundException("Был передан sortBy с неподдерживаемым типом сортировки: " + sortBy +
+                        ". Поддерживаются только year, likes");
+            }
+        }
+
+        return result;
     }
 }
