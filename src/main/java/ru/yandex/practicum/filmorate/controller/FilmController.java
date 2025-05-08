@@ -62,6 +62,10 @@ public class FilmController {
         List<Film> films;
         if (genreId != null && year != null) {
             films = filmService.getMostPopularFilmsByGenreAndYear(count, genreId, year);
+        } else if (genreId != null) {
+            films = filmService.getPopularFilmsByGenre(count, genreId);
+        } else if (year != null) {
+            films = filmService.getPopularFilmsByYear(count, year);
         } else {
             // в случае, если фильтры не указаны, возвращаем общий список популярных фильмов
             films = new ArrayList<>(filmService.getMostPopularFilms(count));

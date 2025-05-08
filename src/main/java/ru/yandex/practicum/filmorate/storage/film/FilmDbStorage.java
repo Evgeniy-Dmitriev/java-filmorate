@@ -238,10 +238,45 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN ratings r ON f.rating_id = r.rating_id " +
                 "JOIN film_genres fg ON f.film_id = fg.film_id " +
                 "WHERE fg.genre_id = ? AND YEAR(f.release_date) = ? " +
+                "GROUP BY f.film_id " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
 
         List<Film> result = jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
+
+        return result;
+    }
+
+    @Override
+    public List<Film> findPopularFilmsByGenre(int count, long genreId) {
+        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
+
+        List<Film> result = jdbcTemplate.query(sql, this::mapRowToFilm, genreId, count);
+
+        return result;
+    }
+
+    @Override
+    public List<Film> findPopularFilmsByYear(int count, int year) {
+        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE YEAR(f.release_date) = ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
+
+        List<Film> result = jdbcTemplate.query(sql, this::mapRowToFilm, year, count);
 
         return result;
     }
