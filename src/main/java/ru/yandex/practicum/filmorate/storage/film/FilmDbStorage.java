@@ -164,6 +164,27 @@ public class FilmDbStorage implements FilmStorage {
         return count != null && count > 0;
     }
 
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "COUNT(DISTINCT l.user_id) as rate " +
+                "FROM films f " +
+                "JOIN likes l1 ON f.film_id = l1.film_id AND l1.user_id = ? " +
+                "JOIN likes l2 ON f.film_id = l2.film_id AND l2.user_id = ? " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN ratings r ON f.rating_id = r.rating_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY rate DESC";
+
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
+        for (Film film : films) {
+            loadFilmGenres(film);
+            loadFilmLikes(film);
+        }
+
+        return films;
+    }
+
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();
         film.setId(resultSet.getLong("film_id"));
