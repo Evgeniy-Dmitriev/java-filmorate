@@ -50,7 +50,7 @@ public class UserDbStorage implements UserStorage {
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"user_id"});
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"user_id"});
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getLogin());
             ps.setString(3, user.getName());
@@ -115,7 +115,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public  boolean hasUsersId(Long userId) {
+    public boolean hasUsersId(Long userId) {
         String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null && count > 0;

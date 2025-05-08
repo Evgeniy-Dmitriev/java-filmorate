@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface FilmStorage {
 
@@ -25,6 +27,8 @@ public interface FilmStorage {
     List<Film> findMostPopularFilms(int count);
 
     boolean hasFilmsId(Long filmId);
+
+    public Set<Long> findFilmLikes(User user);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 

@@ -31,7 +31,7 @@ public class FilmController {
 
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
-       return filmService.updateFilm(newFilm);
+        return filmService.updateFilm(newFilm);
     }
 
     @DeleteMapping("/{id}")

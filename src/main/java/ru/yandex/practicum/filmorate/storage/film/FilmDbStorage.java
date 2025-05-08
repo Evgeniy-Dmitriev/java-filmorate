@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -65,7 +66,7 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, keyHolder);
 
-        film.setId(keyHolder.getKey().longValue());
+        film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             saveFilmGenres(film);
@@ -255,6 +256,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setLikes(new HashSet<>(likes));
     }
 
+  
     private void loadFilmDirectors(Film film) {
         String sql = "SELECT d.director_id, d.name " +
                 "FROM directors AS d " +
@@ -296,5 +298,10 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return result;
+      
+    @Override
+    public Set<Long> findFilmLikes(User user) {
+        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, user.getId()));
     }
 }
