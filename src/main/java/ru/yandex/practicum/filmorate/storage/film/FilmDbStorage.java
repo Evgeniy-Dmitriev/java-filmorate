@@ -197,6 +197,39 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    @Override
+    public List<Film> getByDirector(Long directorId, String sortBy) {
+        String getByYear = "SELECT f.film_id FROM films f " +
+                "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
+                "WHERE fd.director_id = ? ORDER BY EXTRACT(YEAR FROM f.release_date)";
+
+        String getByLikes = "SELECT f.film_id FROM films f " +
+                "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
+                "LEFT JOIN likes l ON l.film_id = f.film_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC";
+
+        List<Long> filmIds = switch (sortBy) {
+            case "year" -> jdbcTemplate.queryForList(getByYear, Long.class, directorId);
+            case "likes" -> jdbcTemplate.queryForList(getByLikes, Long.class, directorId);
+            default -> new ArrayList<>();
+        };
+
+        List<Film> result = new ArrayList<>();
+
+        for (Long id : filmIds) {
+            result.add(findFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден")));
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Long> findFilmLikes(User user) {
+        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, user.getId()));
+    }
+
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();
         film.setId(resultSet.getLong("film_id"));
@@ -256,12 +289,6 @@ public class FilmDbStorage implements FilmStorage {
         film.setLikes(new HashSet<>(likes));
     }
 
-    @Override
-    public Set<Long> findFilmLikes(User user) {
-        String sql = "SELECT film_id FROM likes WHERE user_id = ?";
-        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, user.getId()));
-    }
-
     private void loadFilmDirectors(Film film) {
         String sql = "SELECT d.director_id, d.name " +
                 "FROM directors AS d " +
@@ -276,32 +303,5 @@ public class FilmDbStorage implements FilmStorage {
         }, film.getId());
 
         film.setDirectors(new HashSet<>(directors));
-    }
-
-    @Override
-    public List<Film> getByDirector(Long directorId, String sortBy) {
-        String getByYear = "SELECT f.film_id FROM films f " +
-                "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
-                "WHERE fd.director_id = ? ORDER BY EXTRACT(YEAR FROM f.release_date)";
-
-        String getByLikes = "SELECT f.film_id FROM films f " +
-                "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
-                "LEFT JOIN likes l ON l.film_id = f.film_id " +
-                "WHERE fd.director_id = ? " +
-                "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC";
-
-        List<Long> filmIds = switch (sortBy) {
-            case "year" -> jdbcTemplate.queryForList(getByYear, Long.class, directorId);
-            case "likes" -> jdbcTemplate.queryForList(getByLikes, Long.class, directorId);
-            default -> new ArrayList<>();
-        };
-
-        List<Film> result = new ArrayList<>();
-
-        for (Long id : filmIds) {
-            result.add(findFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден")));
-        }
-
-        return result;
     }
 }
