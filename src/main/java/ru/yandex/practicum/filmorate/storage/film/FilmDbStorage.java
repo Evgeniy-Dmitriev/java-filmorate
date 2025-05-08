@@ -57,7 +57,7 @@ public class FilmDbStorage implements FilmStorage {
                 "VALUES (?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"film_id"});
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"film_id"});
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
@@ -75,7 +75,7 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            System.out.println("Директор фильма из ввода "+film.getDirectors());
+            System.out.println("Директор фильма из ввода " + film.getDirectors());
             saveFilmDirectors(film);
         }
 
@@ -282,20 +282,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getByDirector(Long directorId,String sortBy) {
-        String get_by_year = "SELECT f.film_id FROM films f " +
+    public List<Film> getByDirector(Long directorId, String sortBy) {
+        String getByYear = "SELECT f.film_id FROM films f " +
                 "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
                 "WHERE fd.director_id = ? ORDER BY EXTRACT(YEAR FROM f.release_date)";
 
-        String get_by_likes = "SELECT f.film_id FROM films f " +
+        String getByLikes = "SELECT f.film_id FROM films f " +
                 "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
                 "LEFT JOIN likes l ON l.film_id = f.film_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC";
 
         List<Long> filmIds = switch (sortBy) {
-            case "year" -> jdbcTemplate.queryForList(get_by_year, Long.class, directorId);
-            case "likes" -> jdbcTemplate.queryForList(get_by_likes, Long.class, directorId);
+            case "year" -> jdbcTemplate.queryForList(getByYear, Long.class, directorId);
+            case "likes" -> jdbcTemplate.queryForList(getByLikes, Long.class, directorId);
             default -> new ArrayList<>();
         };
 
