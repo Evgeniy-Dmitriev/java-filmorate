@@ -117,6 +117,25 @@ public class FilmService {
         return commonFilms != null ? commonFilms : Collections.emptyList();
     }
 
+    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        List<Film> result;
+
+        switch (sortBy) {
+            case "year", "likes" -> result = filmStorage.getByDirector(directorId, sortBy);
+            default -> {
+                log.info("Попытка получить список фильмов по режиссёру с sortBy = {}", sortBy);
+                throw new NotFoundException("Был передан sortBy с неподдерживаемым типом сортировки: " + sortBy +
+                        ". Поддерживаются только year, likes");
+            }
+        }
+
+        return result;
+    }
+
+    public List<Film> getMostPopularFilmsByGenreAndYear(int count, long genreId, int year) {
+        return filmStorage.findPopularFilmsByGenreAndYear(count, genreId, year);
+    }
+
     private void validate(Film film) {
         if (film.getDescription() != null && film.getDescription().length() > 200) {
             String message = "Максимальная длина описания — 200 символов";
@@ -134,20 +153,5 @@ public class FilmService {
             throw new ValidationException(message);
         }
         log.debug("Валидация фильма прошла успешно: {}", film.getName());
-    }
-
-    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
-        List<Film> result;
-
-        switch (sortBy) {
-            case "year", "likes" -> result = filmStorage.getByDirector(directorId, sortBy);
-            default -> {
-                log.info("Попытка получить список фильмов по режиссёру с sortBy = {}", sortBy);
-                throw new NotFoundException("Был передан sortBy с неподдерживаемым типом сортировки: " + sortBy +
-                        ". Поддерживаются только year, likes");
-            }
-        }
-
-        return result;
     }
 }

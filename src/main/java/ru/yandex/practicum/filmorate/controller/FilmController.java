@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -55,8 +56,18 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getMostPopularFilms(count);
+    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10") int count,
+                                      @RequestParam(name = "genreId", required = false) Long genreId,
+                                      @RequestParam(name = "year", required = false) Integer year) {
+        List<Film> films;
+        if (genreId != null && year != null) {
+            films = filmService.getMostPopularFilmsByGenreAndYear(count, genreId, year);
+        } else {
+            // в случае, если фильтры не указаны, возвращаем общий список популярных фильмов
+            films = new ArrayList<>(filmService.getMostPopularFilms(count));
+        }
+
+        return films;
     }
 
     @GetMapping("/common")

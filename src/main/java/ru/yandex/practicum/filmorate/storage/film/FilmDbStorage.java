@@ -55,7 +55,7 @@ public class FilmDbStorage implements FilmStorage {
                 "VALUES (?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"film_id"});
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"film_id"});
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
@@ -228,6 +228,22 @@ public class FilmDbStorage implements FilmStorage {
     public Set<Long> findFilmLikes(User user) {
         String sql = "SELECT film_id FROM likes WHERE user_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, user.getId()));
+    }
+
+    @Override
+    public List<Film> findPopularFilmsByGenreAndYear(int count, long genreId, int year) {
+        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? AND YEAR(f.release_date) = ? " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
+
+        List<Film> result = jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
+
+        return result;
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
