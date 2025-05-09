@@ -101,10 +101,6 @@ public class FilmService {
         filmStorage.removeLike(film, userId);
     }
 
-    public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.findMostPopularFilms(count);
-    }
-
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
             throw new IllegalArgumentException("Пользователь и друг не могут быть одним и тем же человеком.");
@@ -115,6 +111,25 @@ public class FilmService {
         List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
 
         return commonFilms != null ? commonFilms : Collections.emptyList();
+    }
+
+    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        List<Film> result;
+
+        switch (sortBy) {
+            case "year", "likes" -> result = filmStorage.getByDirector(directorId, sortBy);
+            default -> {
+                log.info("Попытка получить список фильмов по режиссёру с sortBy = {}", sortBy);
+                throw new NotFoundException("Был передан sortBy с неподдерживаемым типом сортировки: " + sortBy +
+                        ". Поддерживаются только year, likes");
+            }
+        }
+
+        return result;
+    }
+
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+        return filmStorage.findPopularFilms(count, genreId, year);
     }
 
     private void validate(Film film) {
@@ -134,20 +149,5 @@ public class FilmService {
             throw new ValidationException(message);
         }
         log.debug("Валидация фильма прошла успешно: {}", film.getName());
-    }
-
-    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
-        List<Film> result;
-
-        switch (sortBy) {
-            case "year", "likes" -> result = filmStorage.getByDirector(directorId, sortBy);
-            default -> {
-                log.info("Попытка получить список фильмов по режиссёру с sortBy = {}", sortBy);
-                throw new NotFoundException("Был передан sortBy с неподдерживаемым типом сортировки: " + sortBy +
-                        ". Поддерживаются только year, likes");
-            }
-        }
-
-        return result;
     }
 }

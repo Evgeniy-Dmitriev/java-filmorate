@@ -24,13 +24,13 @@ public interface FilmStorage {
 
     void removeLike(Film film, Long userId);
 
-    List<Film> findMostPopularFilms(int count);
-
     boolean hasFilmsId(Long filmId);
 
     public Set<Long> findFilmLikes(User user);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 
-    List<Film> getByDirector(Long directorId,String sortBy);
+    List<Film> getByDirector(Long directorId, String sortBy);
+
+    List<Film> findPopularFilms(Integer count, Long genreId, Integer year);
 }

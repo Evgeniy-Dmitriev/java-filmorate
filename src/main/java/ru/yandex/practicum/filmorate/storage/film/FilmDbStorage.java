@@ -55,7 +55,7 @@ public class FilmDbStorage implements FilmStorage {
                 "VALUES (?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"film_id"});
+            PreparedStatement ps = connection.prepareStatement(sql, new String[]{"film_id"});
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
@@ -150,15 +150,56 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findMostPopularFilms(int count) {
-        String sql = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+    public List<Film> findPopularFilms(Integer count, Long genreId, Integer year) {
+        String findPopularFilmsByGenreAndYear = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? AND YEAR(f.release_date) = ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
+
+        String findPopularFilmsByGenre = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
+
+        String findPopularFilmsByYear = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE YEAR(f.release_date) = ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC " +
+                "LIMIT ?";
+
+        String findPopularFilmsByLikes = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
                 "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
                 "FROM films f " +
                 "JOIN ratings r ON f.rating_id = r.rating_id " +
                 "ORDER BY likes_count DESC " +
                 "LIMIT ?";
 
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, count);
+        List<Film> films = new ArrayList<>();
+
+        if (genreId != null && year != null) {
+            films = jdbcTemplate.query(findPopularFilmsByGenreAndYear, this::mapRowToFilm, genreId, year, count);
+        } else if (genreId != null) {
+            films = jdbcTemplate.query(findPopularFilmsByGenre, this::mapRowToFilm, genreId, count);
+        } else if (year != null) {
+            films = jdbcTemplate.query(findPopularFilmsByYear, this::mapRowToFilm, year, count);
+        } else {
+            // в случае, если фильтры не указаны, возвращаем общий список популярных фильмов
+            films = jdbcTemplate.query(findPopularFilmsByLikes, this::mapRowToFilm, count);
+        }
 
         for (Film film : films) {
             loadFilmGenres(film);
