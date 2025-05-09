@@ -190,7 +190,6 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = new ArrayList<>();
 
-
         if (genreId != null && year != null) {
             films = jdbcTemplate.query(findPopularFilmsByGenreAndYear, this::mapRowToFilm, genreId, year, count);
         } else if (genreId != null) {
