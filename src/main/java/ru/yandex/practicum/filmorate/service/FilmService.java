@@ -101,10 +101,6 @@ public class FilmService {
         filmStorage.removeLike(film, userId);
     }
 
-    public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.findMostPopularFilms(count);
-    }
-
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
             throw new IllegalArgumentException("Пользователь и друг не могут быть одним и тем же человеком.");
@@ -132,16 +128,8 @@ public class FilmService {
         return result;
     }
 
-    public List<Film> getMostPopularFilmsByGenreAndYear(int count, long genreId, int year) {
-        return filmStorage.findPopularFilmsByGenreAndYear(count, genreId, year);
-    }
-
-    public List<Film> getPopularFilmsByGenre(int count, long genreId) {
-        return filmStorage.findPopularFilmsByGenre(count, genreId);
-    }
-
-    public List<Film> getPopularFilmsByYear(int count, int year) {
-        return filmStorage.findPopularFilmsByYear(count, year);
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+        return filmStorage.findPopularFilms(count, genreId, year);
     }
 
     private void validate(Film film) {
