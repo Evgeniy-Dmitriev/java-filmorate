@@ -20,7 +20,4 @@ public class Review {
 
     private Integer useful;
 
-
-
-
 }
