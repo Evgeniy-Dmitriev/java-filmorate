@@ -211,6 +211,58 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> search(String query, String by) {
+        String findFilmsByTitle = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "WHERE LOWER(f.name) LIKE LOWER(?) " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC ";
+
+        String findFilmsByDirector = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "INNER JOIN film_directors fd ON fd.film_id = f.film_id " +
+                "JOIN directors d ON d.director_id = fd.director_id " +
+                "LEFT JOIN likes l ON l.film_id = f.film_id " +
+                "WHERE LOWER(d.name) LIKE LOWER(?) " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC ";
+
+        String findFilmsByTitleAndDirector = "SELECT f.*, r.rating_id, r.name as mpa_name, " +
+                "(SELECT COUNT(*) FROM likes l WHERE l.film_id = f.film_id) as likes_count " +
+                "FROM films f " +
+                "JOIN ratings r ON f.rating_id = r.rating_id " +
+                "LEFT JOIN film_directors fd ON fd.film_id = f.film_id " +
+                "LEFT JOIN directors d ON d.director_id = fd.director_id " +
+                "LEFT JOIN likes l ON l.film_id = f.film_id " +
+                "WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_count DESC ";
+
+        String searchQuery = "%" + query + "%";
+        List<Film> films = new ArrayList<>();
+
+        if (by.contains("title") && by.contains("director")) {
+            films = jdbcTemplate.query(findFilmsByTitleAndDirector, this::mapRowToFilm, searchQuery, searchQuery);
+        } else if (by.contains("title")) {
+            films = jdbcTemplate.query(findFilmsByTitle, this::mapRowToFilm, searchQuery);
+        } else if (by.contains("director")) {
+            films = jdbcTemplate.query(findFilmsByDirector, this::mapRowToFilm, searchQuery);
+        }
+
+        for (Film film : films) {
+            loadFilmGenres(film);
+            loadFilmLikes(film);
+            loadFilmDirectors(film);
+        }
+
+        return films;
+    }
+
+    @Override
     public boolean hasFilmsId(Long filmId) {
         String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId);

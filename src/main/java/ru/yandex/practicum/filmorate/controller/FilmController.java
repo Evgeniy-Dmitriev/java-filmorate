@@ -70,4 +70,9 @@ public class FilmController {
     public List<Film> getPopularFromDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
         return filmService.getDirectorFilms(directorId, sortBy);
     }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        return filmService.search(query, by);
+    }
 }

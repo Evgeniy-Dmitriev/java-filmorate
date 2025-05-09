@@ -132,6 +132,14 @@ public class FilmService {
         return filmStorage.findPopularFilms(count, genreId, year);
     }
 
+    public List<Film> search(String query, String by) {
+        if (!by.contains("title") && !by.contains("director")) {
+            throw new NotFoundException("Параметр by может принимать значения: title, director или оба значения через запятую");
+        }
+
+        return filmStorage.search(query, by);
+    }
+
     private void validate(Film film) {
         if (film.getDescription() != null && film.getDescription().length() > 200) {
             String message = "Максимальная длина описания — 200 символов";
