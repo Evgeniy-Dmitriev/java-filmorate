@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -126,7 +125,7 @@ public class FilmService {
 
     public List<Film> getDirectorFilms(Long directorId, String sortBy) {
         Director director = directorService.getDirectorById(directorId);
-        if (director==null) {
+        if (director == null) {
             throw new NotFoundException("Директор не найден с ID: " + directorId);
         }
 

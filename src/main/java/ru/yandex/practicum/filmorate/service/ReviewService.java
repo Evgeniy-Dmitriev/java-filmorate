@@ -50,11 +50,12 @@ public class ReviewService {
     public Review updateReview(Review review) {
         Review updatedReview = reviewDbStorage.updateReview(review);
         eventService.createEvent(
-                review.getUserId(),
+                updatedReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.UPDATE,
                 updatedReview.getReviewId()
         );
+
         return updatedReview;
     }
 

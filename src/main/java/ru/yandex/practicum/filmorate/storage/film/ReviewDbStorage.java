@@ -8,9 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.feed.EventOperation;
-import ru.yandex.practicum.filmorate.model.feed.EventType;
-import ru.yandex.practicum.filmorate.service.EventService;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,12 +19,10 @@ import java.util.Optional;
 @Repository
 public class ReviewDbStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final EventService eventService;
 
     @Autowired
-    public ReviewDbStorage(final JdbcTemplate jdbcTemplate, EventService eventService) {
+    public ReviewDbStorage(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.eventService = eventService;
     }
 
     public List<Review> findAllReviews() {
@@ -83,8 +78,6 @@ public class ReviewDbStorage {
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
 
-        eventService.createEvent(review.getUserId(), EventType.REVIEW, EventOperation.ADD, review.getReviewId());
-
         return review;
     }
 
@@ -101,21 +94,18 @@ public class ReviewDbStorage {
 
     public boolean deleteReview(Long reviewId) {
         String sql = "DELETE FROM reviews WHERE id = ?";
-
         return jdbcTemplate.update(sql, reviewId) > 0;
     }
 
     public void addLike(int reviewId, int userId) {
         removeLikeOrDislike(reviewId, userId);
         String likeSql = "INSERT INTO reviews_likes (review_id, user_id, is_like) VALUES (?, ?, 1)";
-
         jdbcTemplate.update(likeSql, reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
         removeLikeOrDislike(reviewId, userId);
         String dislikeSql = "INSERT INTO reviews_likes (review_id, user_id, is_like) VALUES (?, ?, -1)";
-
         jdbcTemplate.update(dislikeSql, reviewId, userId);
     }
 
