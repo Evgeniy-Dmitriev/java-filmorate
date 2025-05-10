@@ -8,8 +8,12 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.Event;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.model.feed.Event;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -19,11 +23,13 @@ import java.util.*;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final EventService eventService;
     private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage, FilmStorage filmStorage) {
+    public UserService(UserStorage userStorage, FilmStorage filmStorage, EventService eventService) {
         this.userStorage = userStorage;
+        this.eventService = eventService;
         this.filmStorage = filmStorage;
     }
 
@@ -93,6 +99,8 @@ public class UserService {
         User friend = userStorage.findUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Друг с id: " + friendId + " не найден"));
 
+        eventService.createEvent(userId, EventType.FRIEND, EventOperation.ADD, friendId);
+
         userStorage.addFriend(user, friend);
     }
 
@@ -101,6 +109,8 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         User friend = userStorage.findUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Друг с id: " + friendId + " не найден"));
+
+        eventService.createEvent(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
 
         userStorage.removeFriend(user, friend);
     }
@@ -118,6 +128,11 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Другой пользователь с id: " + otherId + " не найден"));
 
         return userStorage.findCommonFriends(user, otherUser);
+    }
+
+    public List<Event> getFeed(Long userId) {
+        getUserById(userId);
+        return eventService.getFeed(userId);
     }
 
     public List<Film> getRecommendations(Long userId) {

@@ -26,7 +26,7 @@ public interface FilmStorage {
 
     boolean hasFilmsId(Long filmId);
 
-    public Set<Long> findFilmLikes(User user);
+    Set<Long> findFilmLikes(User user);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
 

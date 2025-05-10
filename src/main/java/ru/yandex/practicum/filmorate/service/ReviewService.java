@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 import ru.yandex.practicum.filmorate.storage.film.ReviewDbStorage;
 
 import java.util.List;
@@ -12,10 +14,12 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewDbStorage reviewDbStorage;
+    private final EventService eventService;
 
     @Autowired
-    public ReviewService(ReviewDbStorage reviewDbStorage) {
+    public ReviewService(ReviewDbStorage reviewDbStorage, EventService eventService) {
         this.reviewDbStorage = reviewDbStorage;
+        this.eventService = eventService;
     }
 
     public List<Review> getAllReviews() {
@@ -33,16 +37,39 @@ public class ReviewService {
     }
 
     public Review createReview(Review review) {
-        return reviewDbStorage.createReview(review);
+        Review createdReview = reviewDbStorage.createReview(review);
+        eventService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                EventOperation.ADD,
+                createdReview.getReviewId()
+        );
+        return createdReview;
     }
 
     public Review updateReview(Review review) {
-        return reviewDbStorage.updateReview(review);
+        Review updatedReview = reviewDbStorage.updateReview(review);
+        eventService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                EventOperation.UPDATE,
+                updatedReview.getReviewId()
+        );
+        return updatedReview;
     }
 
     public boolean deleteReview(Long id) {
-        if (id == null || id < 1) throw new IllegalArgumentException("Отзыв с id = " + id + " не найден");
-        return reviewDbStorage.deleteReview(id);
+        Review review = getReviewById(id);
+        boolean deleted = reviewDbStorage.deleteReview(id);
+        if (deleted) {
+            eventService.createEvent(
+                    review.getUserId(),
+                    EventType.REVIEW,
+                    EventOperation.REMOVE,
+                    review.getReviewId()
+            );
+        }
+        return deleted;
     }
 
     public Review addLike(int reviewId, int userId) {
@@ -64,6 +91,4 @@ public class ReviewService {
         reviewDbStorage.removeDislike(reviewId, userId);
         return getReviewById((long) reviewId);
     }
-
-
 }
