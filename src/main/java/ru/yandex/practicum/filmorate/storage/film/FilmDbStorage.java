@@ -76,7 +76,7 @@ public class FilmDbStorage implements FilmStorage {
             saveFilmDirectors(film);
         }
 
-        return film;
+        return findFilmById(film.getId()).orElse(film);
     }
 
     @Override
