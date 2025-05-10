@@ -21,11 +21,7 @@ public class EventDbStorage implements EventStorage {
 
     @Override
     public List<Event> getFeed(Long userId) {
-        final String sql = "SELECT event_id, timestamp, user_id, event_type, operation, entity_id " +
-                "FROM feed " +
-                "WHERE user_id = ? " +
-                "ORDER BY timestamp ASC";
-
+        String sql = "SELECT * FROM feed WHERE user_id = ? ORDER BY event_id ASC";
         return jdbcTemplate.query(sql, this::mapRow, userId);
     }
 

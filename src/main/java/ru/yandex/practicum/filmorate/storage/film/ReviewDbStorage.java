@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
+import ru.yandex.practicum.filmorate.service.EventService;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,10 +22,12 @@ import java.util.Optional;
 @Repository
 public class ReviewDbStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final EventService eventService;
 
     @Autowired
-    public ReviewDbStorage(final JdbcTemplate jdbcTemplate) {
+    public ReviewDbStorage(final JdbcTemplate jdbcTemplate, EventService eventService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventService = eventService;
     }
 
     public List<Review> findAllReviews() {
@@ -77,6 +82,8 @@ public class ReviewDbStorage {
         }, keyHolder);
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+
+        eventService.createEvent(review.getUserId(), EventType.REVIEW, EventOperation.ADD, review.getReviewId());
 
         return review;
     }

@@ -39,7 +39,7 @@ public class ReviewService {
     public Review createReview(Review review) {
         Review createdReview = reviewDbStorage.createReview(review);
         eventService.createEvent(
-                review.getUserId(),
+                createdReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.ADD,
                 createdReview.getReviewId()
