@@ -73,7 +73,6 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            System.out.println("Директор фильма из ввода " + film.getDirectors());
             saveFilmDirectors(film);
         }
 
@@ -102,6 +101,7 @@ public class FilmDbStorage implements FilmStorage {
             saveFilmGenres(film);
         }
 
+        jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             saveFilmDirectors(film);
         }

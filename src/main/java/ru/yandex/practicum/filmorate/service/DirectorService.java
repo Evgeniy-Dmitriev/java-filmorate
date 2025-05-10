@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.film.DirectorDbStorage;
 
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class DirectorService {
 
@@ -26,6 +29,11 @@ public class DirectorService {
     }
 
     public Director createDirector(Director director) {
+        if (director.getName() == null || director.getName().isBlank()) {
+            String message = "Имя не может быть пустым";
+            log.error("Ошибка при добавлении директора: {}", message);
+            throw new ValidationException(message);
+        }
         return directorDbStorage.createDirector(director);
     }
 

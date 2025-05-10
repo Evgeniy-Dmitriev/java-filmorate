@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -123,6 +125,11 @@ public class FilmService {
     }
 
     public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        Director director = directorService.getDirectorById(directorId);
+        if (director==null) {
+            throw new NotFoundException("Директор не найден с ID: " + directorId);
+        }
+
         List<Film> result;
 
         switch (sortBy) {
