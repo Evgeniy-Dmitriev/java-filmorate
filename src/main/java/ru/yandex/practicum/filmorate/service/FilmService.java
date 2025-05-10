@@ -35,7 +35,8 @@ public class FilmService {
                        UserService userService,
                        RatingService ratingService,
                        GenreService genreService,
-                       DirectorService irectorService)  {
+                       DirectorService directorService,
+                       EventService eventService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.userService = userService;
