@@ -39,7 +39,7 @@ public class ReviewService {
     public Review createReview(Review review) {
         Review createdReview = reviewDbStorage.createReview(review);
         eventService.createEvent(
-                review.getUserId(),
+                createdReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.ADD,
                 createdReview.getReviewId()
@@ -50,11 +50,12 @@ public class ReviewService {
     public Review updateReview(Review review) {
         Review updatedReview = reviewDbStorage.updateReview(review);
         eventService.createEvent(
-                review.getUserId(),
+                updatedReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.UPDATE,
                 updatedReview.getReviewId()
         );
+
         return updatedReview;
     }
 

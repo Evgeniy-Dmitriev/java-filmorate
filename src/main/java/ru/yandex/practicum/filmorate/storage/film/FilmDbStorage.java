@@ -73,11 +73,10 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            System.out.println("Директор фильма из ввода " + film.getDirectors());
             saveFilmDirectors(film);
         }
 
-        return film;
+        return findFilmById(film.getId()).orElse(film);
     }
 
     @Override
@@ -102,6 +101,7 @@ public class FilmDbStorage implements FilmStorage {
             saveFilmGenres(film);
         }
 
+        jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             saveFilmDirectors(film);
         }
@@ -139,7 +139,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Film film, Long userId) {
-        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        String sql = "MERGE INTO likes(film_id, user_id) KEY(film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, film.getId(), userId);
     }
 
@@ -373,7 +373,7 @@ public class FilmDbStorage implements FilmStorage {
             return genre;
         }, film.getId());
 
-        film.setGenres(new HashSet<>(genres));
+        film.setGenres(new LinkedHashSet<>(genres));
     }
 
     private void loadFilmLikes(Film film) {

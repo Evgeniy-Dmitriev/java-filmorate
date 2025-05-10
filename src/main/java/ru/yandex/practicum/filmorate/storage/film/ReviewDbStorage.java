@@ -94,21 +94,18 @@ public class ReviewDbStorage {
 
     public boolean deleteReview(Long reviewId) {
         String sql = "DELETE FROM reviews WHERE id = ?";
-
         return jdbcTemplate.update(sql, reviewId) > 0;
     }
 
     public void addLike(int reviewId, int userId) {
         removeLikeOrDislike(reviewId, userId);
         String likeSql = "INSERT INTO reviews_likes (review_id, user_id, is_like) VALUES (?, ?, 1)";
-
         jdbcTemplate.update(likeSql, reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
         removeLikeOrDislike(reviewId, userId);
         String dislikeSql = "INSERT INTO reviews_likes (review_id, user_id, is_like) VALUES (?, ?, -1)";
-
         jdbcTemplate.update(dislikeSql, reviewId, userId);
     }
 
