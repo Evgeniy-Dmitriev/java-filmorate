@@ -373,7 +373,7 @@ public class FilmDbStorage implements FilmStorage {
             return genre;
         }, film.getId());
 
-        film.setGenres(new HashSet<>(genres));
+        film.setGenres(new LinkedHashSet<>(genres));
     }
 
     private void loadFilmLikes(Film film) {
