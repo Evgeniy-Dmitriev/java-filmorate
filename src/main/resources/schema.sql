@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS films, mpa, genres, film_genres, users, likes, friends, directors, film_directors;
+DROP TABLE IF EXISTS films, ratings, genres, film_genres, users, likes, friends, directors, film_directors, reviews, reviews_likes;
 
 CREATE TABLE IF NOT EXISTS ratings (
         rating_id BIGINT NOT NULL AUTO_INCREMENT,
@@ -61,4 +61,20 @@ CREATE TABLE IF NOT EXISTS film_directors (
 film_id bigint REFERENCES films (film_id) ON DELETE CASCADE ON UPDATE CASCADE,
 director_id bigint REFERENCES directors (director_id) ON DELETE RESTRICT ON UPDATE RESTRICT,
 CONSTRAINT film_director_pk PRIMARY KEY (film_id, director_id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    content VARCHAR(1024),
+    is_positive BOOLEAN,
+    user_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
+    film_id BIGINT REFERENCES films(film_id) ON DELETE CASCADE,
+    CONSTRAINT reviews_pk PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews_likes (
+    review_id BIGINT REFERENCES reviews(id) ON DELETE CASCADE,
+    user_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
+    is_like INT,
+    CONSTRAINT reviews_likes_pk PRIMARY KEY (review_id, user_id)
 );
