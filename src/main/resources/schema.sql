@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS films, mpa, genres, film_genres, users, likes, friends, directors, film_directors;
+DROP TABLE IF EXISTS films, ratings, genres, film_genres, users, likes, friends, directors, film_directors, reviews, reviews_likes;
 
 CREATE TABLE IF NOT EXISTS ratings (
         rating_id BIGINT NOT NULL AUTO_INCREMENT,
