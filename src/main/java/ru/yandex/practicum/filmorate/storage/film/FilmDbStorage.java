@@ -345,18 +345,23 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Genre> genres = new ArrayList<>(film.getGenres());
 
-        for (Genre genre : genres) {
-            jdbcTemplate.update(sql, film.getId(), genre.getId());
-        }
+        List<Object[]> batchArgs = genres.stream()
+                .map(genre -> new Object[]{film.getId(), genre.getId()})
+                .toList();
+
+        jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 
     private void saveFilmDirectors(Film film) {
         String sql = "INSERT INTO film_directors (film_id, director_id) VALUES (?,?)";
 
         List<Director> directors = new ArrayList<>(film.getDirectors());
-        for (Director director : directors) {
-            jdbcTemplate.update(sql, film.getId(), director.getId());
-        }
+
+        List<Object[]> batchArgs = directors.stream()
+                .map(director -> new Object[]{film.getId(), director.getId()})
+                .toList();
+
+        jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 
     private void loadFilmGenres(Film film) {
