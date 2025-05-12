@@ -2,17 +2,20 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -21,18 +24,27 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final UserService userService;
     private final RatingService ratingService;
     private final GenreService genreService;
+    private final DirectorService directorService;
+    private final EventService eventService;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
+    public FilmService(FilmStorage filmStorage,
+                       UserStorage userStorage,
+                       UserService userService,
                        RatingService ratingService,
-                       GenreService genreService) {
+                       GenreService genreService,
+                       DirectorService directorService,
+                       EventService eventService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.userService = userService;
         this.ratingService = ratingService;
         this.genreService = genreService;
+        this.directorService = directorService;
+        this.eventService = eventService;
     }
 
     public Collection<Film> getAllFilms() {
@@ -83,6 +95,8 @@ public class FilmService {
         userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
 
+        eventService.createEvent(userId, EventType.LIKE, EventOperation.ADD, filmId);
+
         filmStorage.addLike(film, userId);
     }
 
@@ -92,11 +106,53 @@ public class FilmService {
         userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
 
+        eventService.createEvent(userId, EventType.LIKE, EventOperation.REMOVE, filmId);
+
         filmStorage.removeLike(film, userId);
     }
 
-    public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.findMostPopularFilms(count);
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            throw new IllegalArgumentException("Пользователь и друг не могут быть одним и тем же человеком.");
+        }
+        userService.getUserById(userId);
+        userService.getUserById(friendId);
+
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        return commonFilms != null ? commonFilms : Collections.emptyList();
+    }
+
+    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        Director director = directorService.getDirectorById(directorId);
+        if (director == null) {
+            throw new NotFoundException("Директор не найден с ID: " + directorId);
+        }
+
+        List<Film> result;
+
+        switch (sortBy) {
+            case "year", "likes" -> result = filmStorage.getByDirector(directorId, sortBy);
+            default -> {
+                log.info("Попытка получить список фильмов по режиссёру с sortBy = {}", sortBy);
+                throw new NotFoundException("Был передан sortBy с неподдерживаемым типом сортировки: " + sortBy +
+                        ". Поддерживаются только year, likes");
+            }
+        }
+
+        return result;
+    }
+
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+        return filmStorage.findPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> search(String query, String by) {
+        if (!by.contains("title") && !by.contains("director")) {
+            throw new NotFoundException("Параметр by может принимать значения: title, director или оба значения через запятую");
+        }
+
+        return filmStorage.search(query, by);
     }
 
     private void validate(Film film) {

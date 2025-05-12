@@ -15,7 +15,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(NotFoundException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getMessage(),"Объект не найден."
         );
     }
 
@@ -23,15 +23,31 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(ValidationException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getMessage(),"Объект не найден."
         );
     }
 
     @ExceptionHandler(ConditionsNotMetException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConditionsNotMet(ConditionsNotMetException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getMessage(),"Ошибка со стороны сервера"
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
+        return new ErrorResponse(
+                e.getMessage(), "Ошибка! Некорректный аргумент."
+        );
+    }
+
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAllOtherExceptions(Throwable e) {
+        return new ErrorResponse(
+                e.getMessage(), "Внутренняя ошибка сервера."
         );
     }
 }

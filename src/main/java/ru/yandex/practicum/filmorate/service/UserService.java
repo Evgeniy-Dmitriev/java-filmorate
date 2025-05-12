@@ -2,27 +2,34 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.Event;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
 public class UserService {
 
     private final UserStorage userStorage;
+    private final EventService eventService;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(UserStorage userStorage, FilmStorage filmStorage, EventService eventService) {
         this.userStorage = userStorage;
+        this.eventService = eventService;
+        this.filmStorage = filmStorage;
     }
 
     public Collection<User> getAllUsers() {
@@ -91,6 +98,8 @@ public class UserService {
         User friend = userStorage.findUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Друг с id: " + friendId + " не найден"));
 
+        eventService.createEvent(userId, EventType.FRIEND, EventOperation.ADD, friendId);
+
         userStorage.addFriend(user, friend);
     }
 
@@ -99,6 +108,8 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
         User friend = userStorage.findUserById(friendId)
                 .orElseThrow(() -> new NotFoundException("Друг с id: " + friendId + " не найден"));
+
+        eventService.createEvent(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
 
         userStorage.removeFriend(user, friend);
     }
@@ -116,5 +127,57 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Другой пользователь с id: " + otherId + " не найден"));
 
         return userStorage.findCommonFriends(user, otherUser);
+    }
+
+    public List<Event> getFeed(Long userId) {
+        getUserById(userId);
+        return eventService.getFeed(userId);
+    }
+
+    public List<Film> getRecommendations(Long userId) {
+        User targetUser = getUserById(userId);
+
+        Set<Long> targetLikes = new HashSet<>(filmStorage.findFilmLikes(targetUser));
+
+        Collection<User> allUsers = getAllUsers().stream()
+                .filter(u -> !u.getId().equals(userId))
+                .toList();
+
+        Map<User, Integer> similarityMap = new HashMap<>();
+
+        for (User otherUser : allUsers) {
+            Set<Long> otherLikes = new HashSet<>(filmStorage.findFilmLikes(otherUser));
+            Set<Long> intersection = new HashSet<>(targetLikes);
+            intersection.retainAll(otherLikes);
+            similarityMap.put(otherUser, intersection.size());
+        }
+
+        if (similarityMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        int maxSimilarity = similarityMap.values().stream().max(Integer::compareTo).orElse(0);
+
+        if (maxSimilarity == 0) {
+            return Collections.emptyList();
+        }
+
+        List<User> mostSimilarUsers = similarityMap.entrySet().stream()
+                .filter(e -> e.getValue() == maxSimilarity)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        Set<Long> recommendedFilmIds = new HashSet<>();
+        for (User similarUser : mostSimilarUsers) {
+            Set<Long> likes = filmStorage.findFilmLikes(similarUser);
+            likes.removeAll(targetLikes); // Только те, которых нет у target
+            recommendedFilmIds.addAll(likes);
+        }
+
+        return recommendedFilmIds.stream()
+                .map(filmStorage::findFilmById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
     }
 }

@@ -37,10 +37,10 @@ public class GenreService {
         Set<Genre> genres = film.getGenres();
         if (genres == null || genres.isEmpty()) return;
         for (Genre genre : genres) {
-           Genre genre1 = getGenreById(genre.getId());
-           if (genre1.getName() == null || genre1.getName().isEmpty()) {
-               throw new NotFoundException("Жанр с идентификатором не найден.");
-           }
+            Genre genre1 = getGenreById(genre.getId());
+            if (genre1.getName() == null || genre1.getName().isEmpty()) {
+                throw new NotFoundException("Жанр с идентификатором не найден.");
+            }
         }
 
     }
