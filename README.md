@@ -78,3 +78,141 @@ Filmorate представляет собой полнофункциональн
 ├── 📊 feed            # Лента событий
 └── 📊 film_directors  # Связь фильмов и режиссеров
 ```
+
+🚀 Запуск приложения
+Предварительные требования
+Java 21 или выше
+
+Maven 3.6+
+
+Запуск приложения
+bash
+# Клонирование репозитория
+git clone <your-repository-url>
+cd filmorate
+
+# Сборка и запуск
+mvn spring-boot:run
+Доступ к приложению
+Приложение: http://localhost:8080
+
+H2 Console: http://localhost:8080/h2-console
+
+JDBC URL: jdbc:h2:file:./db/filmorate
+
+User: sa
+
+Password: password
+
+Запуск тестов
+bash
+mvn test
+📚 API Документация
+Основные endpoint'ы:
+Фильмы
+GET /films - получить все фильмы
+
+POST /films - добавить фильм
+
+PUT /films - обновить фильм
+
+GET /films/{id} - получить фильм по ID
+
+PUT /films/{id}/like/{userId} - поставить лайк
+
+GET /films/popular - популярные фильмы
+
+GET /films/search - поиск фильмов
+
+Пользователи
+GET /users - получить всех пользователей
+
+POST /users - добавить пользователя
+
+PUT /users - обновить пользователя
+
+GET /users/{id} - получить пользователя по ID
+
+PUT /users/{id}/friends/{friendId} - добавить друга
+
+GET /users/{id}/recommendations - рекомендации фильмов
+
+Отзывы
+GET /reviews - получить все отзывы
+
+POST /reviews - добавить отзыв
+
+PUT /reviews - обновить отзыв
+
+PUT /reviews/{reviewId}/like/{userId} - лайк отзыва
+
+Режиссеры
+GET /directors - все режиссеры
+
+POST /directors - добавить режиссера
+
+GET /directors/{id} - режиссер по ID
+
+Жанры и рейтинги
+GET /genres - все жанры
+
+GET /mpa - все рейтинги MPA
+
+🔧 Примеры запросов
+Добавление фильма:
+json
+POST /films
+{
+  "name": "The Matrix",
+  "description": "Компьютерный хакер узнает от таинственных повстанцев о настоящей природе своей реальности",
+  "releaseDate": "1999-03-31",
+  "duration": 136,
+  "mpa": {"id": 4},
+  "genres": [{"id": 6}]
+}
+Добавление пользователя:
+json
+POST /users
+{
+  "email": "user@example.com",
+  "login": "film_lover",
+  "name": "Киноман",
+  "birthday": "1990-01-01"
+}
+🧪 Тестирование
+Проект включает комплексное тестирование:
+
+Unit tests - тестирование сервисов
+
+Integration tests - тестирование API endpoints
+
+SQL миграции - тестовые данные в H2
+
+Запуск тестов:
+
+bash
+mvn test
+📈 Планы по доработке
+Краткосрочные улучшения:
+Миграция на PostgreSQL - переход на production-ready БД
+
+Кэширование - добавление Redis для повышения производительности
+
+Пагинация - для списков фильмов и пользователей
+
+Среднесрочные улучшения:
+Аутентификация - JWT-based аутентификация
+
+Cloud хранилище - для изображений и постеров фильмов
+
+WebSocket - real-time уведомления
+
+Долгосрочные улучшения:
+Микросервисная архитектура - разделение на сервисы
+
+ML рекомендации - улучшение системы рекомендаций
+
+Мобильное приложение - React Native клиент
+
+👥 Разработчики
+Проект разработан Евгением Дмитриевым как учебный проект в рамках курса Java-разработки.
